@@ -1,6 +1,6 @@
 const geojsonStream = require("geojson-stream");
 const fs = require("fs");
-var GeoJSON = require("mongoose-geojson-schema");
+const GeoJSON = require("mongoose-geojson-schema");
 const mongoose = require("mongoose");
 const turf = require("@turf/turf");
 // const { createModel } = require('mongoose-gridfs');
@@ -8,11 +8,20 @@ const turf = require("@turf/turf");
 // const Attachment = createModel();
 
 const geoSchemaBbox = new mongoose.Schema({
-  name: { type: String, unique: true },
+  name0: { type: String },
+  name1: { type: String },
+  name2: { type: String },
   geo: mongoose.Schema.Types.Polygon
+});
+const geoSchema = new mongoose.Schema({
+  name0: { type: String },
+  name1: { type: String },
+  name2: { type: String },
+  geo: mongoose.Schema.Types.MultiPolygon
 });
 
 const GeoModelBbox = mongoose.model("GeoJSONBbox", geoSchemaBbox);
+const GeoModel = mongoose.model("GeoJSON", geoSchema);
 
 mongoose.connect("mongodb://emad:mohesem1368@localhost:27017/test", {
   useUnifiedTopology: true,
@@ -23,57 +32,110 @@ mongoose.connect("mongodb://emad:mohesem1368@localhost:27017/test", {
 mongoose.connection.on("connected", () => {
   console.log("MongoDB connected");
 
-  fs.createReadStream(`./level03.geojson`).pipe(
-    geojsonStream.parse((country, index) => {
-      console.log(country.properties.NAME_0);
+  fs.createReadStream(`./layers/1.geojson`).pipe(
+    //   /* COUNTRIES */
+    //   geojsonStream.parse((country, index) => {
+    //     GeoModelBbox.findOne({ name0: country.properties.NAME_0 }, (err, doc) => {
+    //       if (err) return err;
+    //       if (doc) {
+    //         console.log("doc exist on db ");
+    //       }
+    //       if (!doc) {
+    //         const newCoord = turf.cleanCoords(country).geometry.coordinates;
+    //         const multiPoly = turf.multiPolygon(newCoord, {
+    //           name: country.properties.NAME_0
+    //         });
+    //         const bbox = turf.bbox(multiPoly);
+    //         const bboxPolygon = turf.bboxPolygon(bbox);
+    //         const newGeoModelBbox = new GeoModelBbox({
+    //           name0: multiPoly.properties.name,
+    //           geo: bboxPolygon.geometry
+    //         });
 
-      // console.log(multiPoly);
+    //         const newGeoModel = new GeoModel({
+    //           name0: multiPoly.properties.name,
+    //           geo: multiPoly.geometry
+    //         });
 
-      // console.log(newCoord.geometry.coordinates[0][0].length);
-      // console.log(country.geometry.coordinates[0][0].length);
+    //         newGeoModelBbox.save(err => {
+    //           if (err) console.log(err);
+    //           console.log(`${country.properties.NAME_0} bbox saved`);
+    //         });
 
-      GeoModelBbox.findOne({ name: country.properties.NAME_0 }, (err, doc) => {
-        if (err) return err;
-        if (doc) {
-          console.log("doc exist on db ");
-        }
-        if (!doc) {
-          const newCoord = turf.cleanCoords(country).geometry.coordinates;
-          // console.log(newCoord)
+    //         newGeoModel.save(err => {
+    //           if (err) {
+    //             const options = { tolerance: 0.003, highQuality: true };
+    //             const simplified = turf.simplify(multiPoly, options);
+    //             const simplifiedModel = new GeoModel({
+    //               name0: multiPoly.properties.name,
+    //               geo: simplified.geometry
+    //             });
+    //             simplifiedModel.save();
+    //           }
+    //           console.log(`${country.properties.NAME_0} polygon saved`);
+    //         });
+    //       }
+    //     });
+    //   })
 
-          var multiPoly = turf.multiPolygon(newCoord, {
-            name: country.properties.NAME_0
-          });
-          // const bbox = turf.bboxClip(multiPoly, bbox);
-          var bbox = turf.bbox(multiPoly);
-          var bboxPolygon = turf.bboxPolygon(bbox);
-          // console.log(bboxPolygon.geometry.coordinates);
 
-          const newGeoModelBbox = new GeoModelBbox({
-            name: multiPoly.properties.name,
-            geo: bboxPolygon.geometry
-          });
 
-          newGeoModelBbox.save(err => {
-            console.log(err);
-            // console.log("*********");
-            // console.log("*********");
-            // console.log("*********");
-          });
-        }
-      });
+    
+    /* LEVEL_1 */
+    // geojsonStream.parse((level_1, index) => {
+    //   GeoModelBbox.findOne(
+    //     {
+    //       $and: [
+    //         { name0: level_1.properties.NAME_0 },
+    //         { name1: level_1.properties.NAME_1 }
+    //       ]
+    //     },
+    //     (err, doc) => {
+    //       if (err) return err;
+    //       if (doc) {
+    //         console.log("doc exist on db ");
+    //       }
+    //       if (!doc) {
+    //         const newCoord = turf.cleanCoords(level_1).geometry.coordinates;
+    //         const multiPoly = turf.multiPolygon(newCoord, {
+    //           name: level_1.properties.NAME_0
+    //         });
+    //         const bbox = turf.bbox(multiPoly);
+    //         const bboxPolygon = turf.bboxPolygon(bbox);
+    //         const newGeoModelBbox = new GeoModelBbox({
+    //           name0: level_1.properties.NAME_0,
+    //           name1: level_1.properties.NAME_1,
+    //           geo: bboxPolygon.geometry
+    //         });
 
-      // if (country.properties.NAME_0 === "Angola") {
-      //     console.log(country.geometry.coordinates[0])
-      //     console.log("found")
+    //         const newGeoModel = new GeoModel({
+    //           name0: level_1.properties.NAME_0,
+    //           name1: level_1.properties.NAME_1,
+    //           geo: multiPoly.geometry
+    //         });
 
-      // }
-      //   if (building.geometry.coordinates === null) {
-      //     return null;
-      //   }
-      //   building.id = index;
-      //   return building;
-    })
+    //         newGeoModelBbox.save(err => {
+    //           if (err) console.log(err);
+    //           console.log(`${level_1.properties.NAME_1} in ${level_1.properties.NAME_0} bbox saved`);
+    //         });
+
+    //         newGeoModel.save(err => {
+    //           if (err) {
+    //             const options = { tolerance: 0.003, highQuality: true };
+    //             const simplified = turf.simplify(multiPoly, options);
+    //             const simplifiedModel = new GeoModel({
+    //               name0: level_1.properties.NAME_0,
+    //               name1: level_1.properties.NAME_1,
+    //               geo: simplified.geometry
+    //             });
+    //             simplifiedModel.save();
+    //           }
+    //           console.log(`${level_1.properties.NAME_1} in ${level_1.properties.NAME_0} polygon saved`);
+    //         });
+    //       }
+    //     }
+    //   );
+    // })
   );
 });
 
@@ -88,104 +150,3 @@ mongoose.connection.on("reconnected", () => {
 mongoose.connection.on("error", err => {
   console.error(`MongoDB error: ${err}`);
 });
-
-// const geojsonStream = require("geojson-stream");
-// const fs = require("fs");
-// var GeoJSON = require("mongoose-geojson-schema");
-// const mongoose = require("mongoose");
-// const turf = require("@turf/turf");
-// // const { createModel } = require('mongoose-gridfs');
-
-// // const Attachment = createModel();
-
-// const geoSchema = new mongoose.Schema({
-//   name: { type: String, unique: true },
-//   geo: mongoose.Schema.Types.MultiPolygon
-// });
-
-// const GeoModel = mongoose.model("GeoJSON", geoSchema);
-
-// mongoose.connect("mongodb://emad:mohesem1368@localhost:27017/test", {
-//   useUnifiedTopology: true,
-//   useNewUrlParser: true,
-//   useCreateIndex: true
-// });
-
-// mongoose.connection.on("connected", () => {
-//   console.log("MongoDB connected");
-
-//   fs.createReadStream(`./level03.geojson`).pipe(
-//     geojsonStream.parse((country, index) => {
-//       console.log(country.properties.NAME_0);
-//       const newCoord = turf.cleanCoords(country).geometry.coordinates;
-//       // console.log(newCoord)
-
-//       var multiPoly = turf.multiPolygon(newCoord, {
-//         name: country.properties.NAME_0
-//       });
-
-//       // var multiPoly = turf.multiPolygon(newCoord, {
-//       //   name: country.properties.NAME_0
-//       // });
-
-//       // var options = { tolerance: 0.003, highQuality: true };
-//       // var simplified = turf.simplify(multiPoly, options);
-
-//       GeoModel.findOne({ name: country.properties.NAME_0 }, (err, doc) => {
-//         if (err) return err;
-//         if (doc) {
-//           console.log("doc exist on db ");
-//         }
-//         if (!doc) {
-//           const newGeo = new GeoModel({
-//             name: country.properties.NAME_0,
-//             geo: newCoord
-//           });
-//           newGeo.save(err => {
-//             if (err) console.log(err);
-//           });
-//         }
-//       });
-//     })
-//   );
-
-//   // const City = mongoose.model(
-//   //   "City",
-//   //   new mongoose.Schema({
-//   //     name: String,
-//   //     location: mongoose.Schema.Types.Point
-//   //   })
-//   // );
-
-//   /* City.create({ name: 'Denver', location: denver }).
-//   then(() => */
-
-//   // GeoModel.find(
-//   //   {
-//   //     geo: {
-//   //       $geoIntersects: {
-//   //         $geometry: {
-//   //           type: "Point",
-//   //           coordinates: [40, 13]
-//   //         }
-//   //       }
-//   //     }
-//   //   },
-//   //   (err, data) => {
-//   //     if (err) console.log(err);
-//   //     console.log(data);
-//   //   }
-//   // );
-// });
-
-// mongoose.connection.on("disconnected", () => {
-//   console.log("MongoDB disconnected");
-// });
-
-// mongoose.connection.on("reconnected", () => {
-//   console.log("MongoDB reconnected");
-// });
-
-// mongoose.connection.on("error", err => {
-//   console.error(`MongoDB error: ${err}`);
-// });
